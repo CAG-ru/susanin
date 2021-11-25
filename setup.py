@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='susanin',
-    version='1.1',
+    version='1.1.2',
     author='INID',
     author_email='m.vasilevskaia@cpur.ru',
     long_description=long_description,
