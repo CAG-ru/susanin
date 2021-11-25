@@ -16,7 +16,7 @@ setuptools.setup(
     },
     license='Apache',
     include_package_data=True,
-    package_data={'ovrazhki': ['ovrazhki/*.csv']},
-    packages=['ovrazhki'],
-    install_requires=['requests', 'pandas', 'natasha', 'sklearn', 'thefuzz', 'python-Levenshtein-wheels', 'geonorm']
+    package_data={'ovrazhki': ['ovrazhki/*.csv'], 'geonorm': ['geonorm/*.json', 'geonorm/*.csv']},
+    packages=['ovrazhki', 'geonorm', 'geonorm.nat_new', 'geonorm.nat_new.grammars'],
+    install_requires=['requests', 'pandas', 'natasha', 'sklearn', 'thefuzz', 'python-Levenshtein-wheels'] #, 'geonorm'
 )
