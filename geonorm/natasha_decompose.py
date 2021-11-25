@@ -2,7 +2,7 @@ from natasha import (
     MorphVocab,
 )
 
-from .nat_new import (
+from .nat_new.extractors import (
     AddrExtractorConfig
 )
 
