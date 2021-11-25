@@ -5,8 +5,8 @@ import pandas as pd
 import os
 
 from geonorm.geomatch import Geomatch
-from ovrazhki_magic import build_panels, join_panels, truncate_to, get_mode
-from loader import get_datain_set
+from .ovrazhki_magic import build_panels, join_panels, truncate_to, get_mode
+from .loader import get_datain_set
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
