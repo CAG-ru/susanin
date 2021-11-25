@@ -18,6 +18,7 @@ class Ovrazhki:
         fname = 'oktmo'
         csv_files = ['np', 'mun_obr', 'np_mun_mapping']
         
+        os.makedirs('./data/', exist_ok = True)
         if not all(os.path.isfile(pathlib.Path(
                 f'./data/{csv_file}.csv')) for csv_file in csv_files):
             get_datain_set(url, fname, csv_files)
