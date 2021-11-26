@@ -1,0 +1,7 @@
+{
+    "data": {
+        "url" : "https://ds1.data-in.ru/Aggregated_datasets/Rosstat%2BMinfin%2BConsultant%2B/Istoriya_izmenen_munitsipal_RF_OKTMO_i_nasel_punkti_185_25.11.21/Istoriya_izmenen_munitsipal_RF_OKTMO_i_nasel_punkti_185_25.11.21.zip?",
+        "fname" : "oktmo",
+        "csv_files" : ["np", "mun_obr", "np_mun_mapping"]
+    }
+}

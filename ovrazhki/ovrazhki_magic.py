@@ -1,5 +1,5 @@
 import pandas as pd
-
+import re
 
 # Fun to make with panel data
 
@@ -71,7 +71,11 @@ def track_ovrazhki(df, time_name, mun_type):
         row['duplicates'] = ''
     elif len(correct_df) == 0:
         row = find_closest_row(df[time_name].unique()[0], df)
-        row['message'] = 'broken panel! no such municipality'
+        if df[time_name].unique()[0] < pd.to_datetime('2015'):
+            row['message'] = '< 2015 no guarantee'
+        
+        else:
+            row['message'] = 'broken panel! no such municipality'
         row['duplicates'] = ''
     else:
         row = correct_df.iloc[0]
@@ -103,7 +107,7 @@ def find_closest_row(timestamp, df):
     if timestamp - min_time < max_time - timestamp:
         return df[df.time_start == min_time].copy().iloc[0]
     else:
-        return df[df.time_start == max_time].copy().iloc[0]  
+        return df[df.time_end == max_time].copy().iloc[0]  
     
 def is_timely(row, time_name):
     '''
@@ -167,6 +171,11 @@ def truncate_to(df, to='year'):
         df['time_end'] = pd.to_datetime(df.odate_end)
     return df
 
+def split_before_2015(df, time_name):
+    before_2015 = df[df[time_name] < pd.to_datetime('2015')].copy()
+    before_2015['message'] = '< 2015 no data'
+    after_2015 = df[df[time_name] >= pd.to_datetime('2015')].copy()
+    return before_2015, after_2015
 
 # Basic Pandas utils
 
@@ -175,3 +184,10 @@ def get_most_frequent_n(df, column, n):
 
 def get_mode(df, column):
     return get_most_frequent_n(df, column, 1)[0]
+
+def expand_region(df):
+    df['mun_type'] = df['mun_type'].apply(
+            lambda x: re.sub('[Рр]айон', 'Муниципальный район', str(x)))
+    df['municipality'] = df['municipality'].apply(
+            lambda x: re.sub('ский$', 'ский муниципальный район', str(x)))
+    return df
