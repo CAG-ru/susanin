@@ -34,7 +34,7 @@ def get_standard(fname='standard', path='./', replace=False):
         shutil.move(pathlib.Path(f'/tmp/{fname}.zip'), pathlib.Path(f'{path}/{fname}.zip'))
 
 
-def download_standard(url='https://ds1.data-in.ru/Aggregated_datasets/FIAS%2BPochta_RF/Adress_klassificator_FIAS%2BPochta_RF_179_14.10.21.zip?',
+def download_standard(url='https://nc.cloud.cpur.ru/s/xq6Ao5E36qipYik/download/standard.zip',
                       ):
     """
     Загрузка актуального эталона в текущую директорию
