@@ -15,6 +15,7 @@ class Geomatch:
                  threshold=None,
                  debug=False,
                  skip_dead_end_fields=0,
+                 rearrange_score=0.9,
                  filter_by_prev=True
                  ):
         self.current_directory = str(pathlib.Path(__file__).parent.resolve())
@@ -24,8 +25,13 @@ class Geomatch:
         elif type(standard_db) is str:
             self.standard = pd.read_csv(pathlib.Path(f'{standard_db}'), compression='zip')
         else:
-            self.standard = pd.read_csv(pathlib.Path(f'{self.current_directory}/standard.zip'), compression='zip')
+            self.standard = pd.read_csv(
+                pathlib.Path(f'{self.current_directory}/standard.zip'),
+                compression='zip',
+                delimiter=';'
+            )
         self.standard = self.standard.fillna('')
+        self.rearrange_score = rearrange_score
 
         # здесь можно задать threshold срабатывания для полей если не задано то threshold = 0
         if threshold is not None:
@@ -44,6 +50,7 @@ class Geomatch:
         self.field_ids = {}
         self.filter_ids = None
         self.match_columns = match_columns
+        self.base_match_columns = match_columns
         # self.standard = self.standard  # [self.match_columns]
         self.filter_by_prev = filter_by_prev
 
@@ -151,7 +158,7 @@ class Geomatch:
             threshold = 0
         return score > threshold
 
-    def filter_by_field_intersection(self, search_results):
+    def filter_by_field_intersection_old(self, search_results):
         results = []
         for search_result in search_results:
             ids = []
@@ -194,16 +201,67 @@ class Geomatch:
 
         return results
 
-    def output_data(self, intersections):
-        results = []
-        for row in intersections:
-            result = self.return_matched_rows(row['ids'])
-            if 'results' in row:
-                result['results_count'] = row['results']
-            if 'skiped_dead_end_fields' in row:
-                result['skiped_dead_end_fields'] = row['skiped_dead_end_fields']
-            results.append(result)
-        return results
+    def filter_by_fields_intersections(self, search_result, fields):
+        ids = []
+        total_score = 0
+        used_fields = 0
+        skip_dead_end_fields = 0
+        out_fields = {}
+        curr_query = {
+            'ids': []
+        }
+
+        for field in fields:
+
+            search_result_field = search_result[field][0]
+
+            out_fields[field] = {
+                'val': search_result_field['name'],
+                'score': search_result_field['score'],
+                'status': 'LOW_SCORE'
+            }
+
+            if self.check_threshold(field, search_result_field['score']):
+                test_ids = copy(ids)
+                test_ids.append(search_result_field['ids'])
+
+                if len(set.intersection(*test_ids)) > 0 or self.skip_dead_end_fields <= skip_dead_end_fields:
+                    total_score += search_result_field['score']
+                    used_fields += 1
+                    out_fields[field]['status'] = 'OK'
+                    ids = test_ids
+                else:
+                    out_fields[field]['status'] = 'DEAD_END_SKIP'
+                    skip_dead_end_fields += 1
+
+        if len(ids) > 0:
+            curr_query['ids'] = set.intersection(*ids)
+
+        curr_query['results'] = len(curr_query['ids'])
+        curr_query['skiped_dead_end_fields'] = skip_dead_end_fields
+        curr_query['out_fields'] = out_fields
+        curr_query['score'] = total_score / used_fields if used_fields > 0 else 0
+
+        return curr_query
+
+    def filter_by_field_intersection(self, search_results):
+        for search_result in search_results:
+            result = self.filter_by_fields_intersections(search_result, search_result.keys())
+
+        return result
+
+    def output_data(self, intersection):
+        result = self.return_matched_rows(intersection['ids'])
+        if 'results' in intersection:
+            result['results_count'] = intersection['results']
+        if 'skiped_dead_end_fields' in intersection:
+            result['skiped_dead_end_fields'] = intersection['skiped_dead_end_fields']
+        if 'out_fields' in intersection:
+            result['out_fields'] = intersection['out_fields']
+        if 'score' in intersection:
+            result['score'] = intersection['score']
+
+        return result
 
     def __extract_result(self, row):
         return self.process_address(row.to_dict())
@@ -211,12 +269,27 @@ class Geomatch:
     def process_df(self, df):
         return df.apply(self.__extract_result, axis=1, result_type="expand")
 
-    def process_address(self, address_dict):
+    def find_best_result(self, address_dict):
         matches = self.find_in_fields_by_step(address_dict)
-        intersections = self.filter_by_field_intersection(matches)
-        results = self.output_data(intersections)
+        intersection = self.filter_by_field_intersection(matches)
 
-        return results[0]
+        return self.output_data(intersection)
+
+    def process_address(self, address_dict):
+        curr_score = 0
+        for i in range(len(self.match_columns)):
+            f = self.match_columns.pop(0)
+            self.match_columns.append(f)
+            self.filter_ids = False
+            curr_result = self.find_best_result(address_dict)
+            if curr_result['score'] > curr_score:
+                curr_score = curr_result['score']
+                result = curr_result
+            if curr_score > self.rearrange_score:
+                break
+
+        self.match_columns = self.base_match_columns
+        return result
 
     def __to_dict_of_list__(self, dict_of_list):
         return [dict(zip(dict_of_list, t)) for t in zip(*dict_of_list.values())]

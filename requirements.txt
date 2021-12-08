@@ -1,0 +1,6 @@
+requests
+pandas
+natasha
+sklearn
+thefuzz
+python-Levenshtein-wheels
