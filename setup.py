@@ -21,4 +21,4 @@ setuptools.setup(
     package_data={'ovrazhki': ['ovrazhki/*.csv'], 'geonorm': ['geonorm/*.json', 'geonorm/*.csv']},
     packages=['ovrazhki', 'geonorm', 'geonorm.nat_new', 'geonorm.nat_new.grammars'],
     install_requires=required
-)``
+)
