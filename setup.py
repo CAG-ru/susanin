@@ -18,7 +18,7 @@ setuptools.setup(
     },
     license='Apache',
     include_package_data=True,
-    package_data={'ovrazhki': ['ovrazhki/*.csv'], 'geonorm': ['geonorm/*.json', 'geonorm/*.csv']},
+    package_data={'ovrazhki': ['ovrazhki/*.csv'], 'geonorm': ['geonorm/*.json', 'geonorm/*.csv', '*.json']},
     packages=['ovrazhki', 'geonorm', 'geonorm.nat_new', 'geonorm.nat_new.grammars'],
     install_requires=required
-)``
+)
