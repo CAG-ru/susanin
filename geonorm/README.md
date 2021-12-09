@@ -8,7 +8,7 @@
 
 загрузка эталонного датасета с data-in.ru в текущую директорию.
 ```shell
-from geonormaliser_utils import get_standard
+from geonorm.geonormaliser_utils import get_standard
 get_standard(fname='standard', path='./', replace=False)
 ```
 
